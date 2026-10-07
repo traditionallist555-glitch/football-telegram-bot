@@ -11,32 +11,44 @@ TODAY_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
 def get_verified_1xbet_matches():
-    url = "https://api.the-odds-api.com/v4/sports/soccer/odds/"
+    url = "https://api.the-odds-api.com/v4/sports/upcoming/odds/"
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "eu",
-        "markets": "h2h,totals",
+        "markets": "h2h",
         "bookmakers": "1xbet,22bet",
     }
     try:
         res = requests.get(url, params=params)
-        return res.json() if res.status_code == 200 else []
+        print("Odds API Status Code:", res.status_code)
+        if res.status_code == 200:
+            return res.json()
+        print("Odds API Error Response:", res.text)
+        return []
     except Exception as e:
-        print(f"Odds API Error: {e}")
+        print(f"Odds API Exception: {e}")
         return []
 
 
 def get_daily_fixtures():
     url = f"https://v3.football.api-sports.io/fixtures?date={TODAY_DATE}"
+    # Corrected header for direct API-Sports account
     headers = {
-        "x-rapidapi-key": API_FOOTBALL_KEY,
-        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-apisports-key": API_FOOTBALL_KEY,
     }
     try:
         res = requests.get(url, headers=headers)
-        return res.json().get("response", []) if res.status_code == 200 else []
+        print("API-Football Status Code:", res.status_code)
+        if res.status_code == 200:
+            fixtures = res.json().get("response", [])
+            print(
+                f"Successfully fetched {len(fixtures)} fixtures for {TODAY_DATE}"
+            )
+            return fixtures
+        print("API-Football Error Response:", res.text)
+        return []
     except Exception as e:
-        print(f"API-Football Error: {e}")
+        print(f"API-Football Exception: {e}")
         return []
 
 
@@ -60,10 +72,15 @@ def analyze_and_select_picks(odds_data, fixtures_data):
 
     prop_index = 0
 
+    if not fixtures_data:
+        print("No fixtures returned for today.")
+        return [], []
+
     for fixture in fixtures_data:
         home = fixture["teams"]["home"]["name"]
         away = fixture["teams"]["away"]["name"]
         league = fixture["league"]["name"]
+        team_pair = f"{home} vs {away}"
 
         match_found = (
             any(
@@ -80,7 +97,7 @@ def analyze_and_select_picks(odds_data, fixtures_data):
                 heavy_props.append(
                     {
                         "category": cat,
-                        "teams": f"{home} vs {away}",
+                        "teams": team_pair,
                         "league": league,
                         "pick": market,
                     }
@@ -89,7 +106,7 @@ def analyze_and_select_picks(odds_data, fixtures_data):
             elif len(sure_anchors) < 3:
                 sure_anchors.append(
                     {
-                        "teams": f"{home} vs {away}",
+                        "teams": team_pair,
                         "league": league,
                         "pick": "Double Chance (1X or X2)"
                         if len(sure_anchors) % 2 == 0
@@ -99,6 +116,46 @@ def analyze_and_select_picks(odds_data, fixtures_data):
 
         if len(heavy_props) == 5 and len(sure_anchors) == 3:
             break
+
+    # Fallback to ensure all 8 slots populate even if line matching is partial
+    if len(heavy_props) < 5 or len(sure_anchors) < 3:
+        for fixture in fixtures_data:
+            home = fixture["teams"]["home"]["name"]
+            away = fixture["teams"]["away"]["name"]
+            league = fixture["league"]["name"]
+            team_pair = f"{home} vs {away}"
+
+            if (
+                prop_index < len(prop_types)
+                and team_pair not in [p["teams"] for p in heavy_props]
+            ):
+                cat, market = prop_types[prop_index]
+                heavy_props.append(
+                    {
+                        "category": cat,
+                        "teams": team_pair,
+                        "league": league,
+                        "pick": market,
+                    }
+                )
+                prop_index += 1
+            elif (
+                len(sure_anchors) < 3
+                and team_pair not in [p["teams"] for p in heavy_props]
+                and team_pair not in [s["teams"] for s in sure_anchors]
+            ):
+                sure_anchors.append(
+                    {
+                        "teams": team_pair,
+                        "league": league,
+                        "pick": "Double Chance (1X or X2)"
+                        if len(sure_anchors) % 2 == 0
+                        else "Over 1.5 Goals",
+                    }
+                )
+
+            if len(heavy_props) == 5 and len(sure_anchors) == 3:
+                break
 
     return heavy_props, sure_anchors
 
@@ -126,9 +183,13 @@ def send_telegram_post(heavy_props, sure_anchors):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     res = requests.post(
         url,
-        json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"},
+        json={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": msg,
+            "parse_mode": "Markdown",
+        },
     )
-    print("Telegram Status:", res.status_code, res.text)
+    print("Telegram Response Status:", res.status_code, res.text)
 
 
 if __name__ == "__main__":
@@ -136,4 +197,4 @@ if __name__ == "__main__":
     fixtures = get_daily_fixtures()
     heavy, sure = analyze_and_select_picks(odds, fixtures)
     send_telegram_post(heavy, sure)
-            
+        
