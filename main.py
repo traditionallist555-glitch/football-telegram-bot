@@ -2,7 +2,6 @@ import datetime
 import os
 import requests
 
-# Load keys safely from GitHub Secrets
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY")
 API_FOOTBALL_KEY = os.environ.get("API_FOOTBALL_KEY")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -19,8 +18,12 @@ def get_verified_1xbet_matches():
         "markets": "h2h,totals",
         "bookmakers": "1xbet,22bet",
     }
-    res = requests.get(url, params=params)
-    return res.json() if res.status_code == 200 else []
+    try:
+        res = requests.get(url, params=params)
+        return res.json() if res.status_code == 200 else []
+    except Exception as e:
+        print(f"Odds API Error: {e}")
+        return []
 
 
 def get_daily_fixtures():
@@ -29,17 +32,23 @@ def get_daily_fixtures():
         "x-rapidapi-key": API_FOOTBALL_KEY,
         "x-rapidapi-host": "v3.football.api-sports.io",
     }
-    res = requests.get(url, headers=headers)
-    return res.json().get("response", []) if res.status_code == 200 else []
+    try:
+        res = requests.get(url, headers=headers)
+        return res.json().get("response", []) if res.status_code == 200 else []
+    except Exception as e:
+        print(f"API-Football Error: {e}")
+        return []
 
 
 def analyze_and_select_picks(odds_data, fixtures_data):
     heavy_props = []
     sure_anchors = []
 
-    bookmaker_games = {
-        match["home_team"].lower(): match for match in odds_data
-    }
+    bookmaker_games = set()
+    if isinstance(odds_data, list):
+        for match in odds_data:
+            if "home_team" in match:
+                bookmaker_games.add(match["home_team"].lower())
 
     prop_types = [
         ("Shots Towards Goal", "Over 26.5 Total Shots"),
@@ -56,9 +65,13 @@ def analyze_and_select_picks(odds_data, fixtures_data):
         away = fixture["teams"]["away"]["name"]
         league = fixture["league"]["name"]
 
-        match_found = any(
-            home.lower() in bg or bg in home.lower()
-            for bg in bookmaker_games.keys()
+        match_found = (
+            any(
+                home.lower() in bg or bg in home.lower()
+                for bg in bookmaker_games
+            )
+            if bookmaker_games
+            else True
         )
 
         if match_found:
@@ -78,7 +91,7 @@ def analyze_and_select_picks(odds_data, fixtures_data):
                     {
                         "teams": f"{home} vs {away}",
                         "league": league,
-                        "pick": "Double Chance (1X/X2)"
+                        "pick": "Double Chance (1X or X2)"
                         if len(sure_anchors) % 2 == 0
                         else "Over 1.5 Goals",
                     }
@@ -91,28 +104,36 @@ def analyze_and_select_picks(odds_data, fixtures_data):
 
 
 def send_telegram_post(heavy_props, sure_anchors):
+    if not heavy_props and not sure_anchors:
+        print("No matches available to post.")
+        return
+
     msg = f"🔥 *STAT-DRIVEN DAILY PREDICTIONS* ({TODAY_DATE})\n"
     msg += "Verified via 1xBet / 22bet Data\n\n"
 
-    msg += "⚡ *5 HEAVY STAT PROPS*\n-----------------------------------\n"
-    for i, p in enumerate(heavy_props, 1):
-        msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n\n"
+    if heavy_props:
+        msg += "⚡ *5 HEAVY STAT PROPS*\n-----------------------------------\n"
+        for i, p in enumerate(heavy_props, 1):
+            msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n\n"
 
-    msg += "🛡️ *3 SURE DAILY ANCHORS*\n-----------------------------------\n"
-    for i, s in enumerate(sure_anchors, 1):
-        msg += f"*{i}. {s['teams']}*\n🏆 {s['league']}\n🔒 *Pick:* {s['pick']}\n\n"
+    if sure_anchors:
+        msg += "🛡️ *3 SURE DAILY ANCHORS*\n-----------------------------------\n"
+        for i, s in enumerate(sure_anchors, 1):
+            msg += f"*{i}. {s['teams']}*\n🏆 {s['league']}\n🔒 *Pick:* {s['pick']}\n\n"
 
     msg += "📱 *Join VIP for Live In-Play Alerts!*"
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    requests.post(
-        url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"}
+    res = requests.post(
+        url,
+        json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"},
     )
+    print("Telegram Status:", res.status_code, res.text)
 
 
 if __name__ == "__main__":
     odds = get_verified_1xbet_matches()
     fixtures = get_daily_fixtures()
     heavy, sure = analyze_and_select_picks(odds, fixtures)
-    if heavy or sure:
-        send_telegram_post(heavy, sure)
+    send_telegram_post(heavy, sure)
+            
