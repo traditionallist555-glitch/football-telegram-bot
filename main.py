@@ -1,176 +1,145 @@
 import datetime
 import os
 import requests
-from curl_cffi import requests as c_requests
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-# Primary and Mirror Endpoints for 1xBet Live Line Feeds
-FEED_ENDPOINTS = [
-    "https://1xbet.com/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true",
-    "https://1xbet.ng/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true",
-    "https://888starz.bet/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true"
-]
+# Direct 1xBet Public Line Feed API (Soccer / Football = Sport ID 1)
+ONEXBET_API_URL = "https://1xbet.com/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=50&lng=en"
 
-CUSTOM_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Referer": "https://1xbet.com/",
+# 1xBet Sub-Market Mapping IDs
+# 1xBet uses specific Sub-Type IDs (SubId) for detailed props:
+# Fouls = 78, Corners = 28, Yellow Cards = 30, Shots on Target = 139, Offsides = 79
+MARKET_SUB_TYPES = {
+    78: "FOULS",
+    28: "CORNERS",
+    30: "CARDS",
+    139: "SHOTS ON TARGET",
+    79: "OFFSIDES"
 }
 
-STAT_CATEGORIES = [
-    {"name": "FOULS", "keywords": ["foul", "fouls"], "unit": "Fouls"},
-    {"name": "CORNERS", "keywords": ["corner", "corners"], "unit": "Corners"},
-    {"name": "CARDS / DISCIPLINE", "keywords": ["card", "yellow card", "booking"], "unit": "Cards"},
-    {"name": "OFFSIDES", "keywords": ["offside", "offsides"], "unit": "Offsides"},
-    {"name": "SHOTS ON TARGET", "keywords": ["shots on target", "shots towards"], "unit": "Shots"},
-    {"name": "THROW-INS", "keywords": ["throw", "throw-in", "throwin"], "unit": "Throw-ins"},
-    {"name": "GOALKEEPER SAVES", "keywords": ["saves", "goalkeeper saves"], "unit": "Saves"},
-]
-
-def fetch_1xbet_raw_feed():
-    """Fetch live line feed from 1xBet endpoints with mirror failovers."""
-    for url in FEED_ENDPOINTS:
-        print(f"🔍 Attempting connection to 1xBet feed: {url[:30]}...")
-        try:
-            res = c_requests.get(url, headers=CUSTOM_HEADERS, impersonate="chrome120", timeout=15)
-            if res.status_code == 200:
-                data = res.json()
-                games = data.get("Value", [])
-                if games:
-                    print(f"✅ Successfully retrieved {len(games)} live matches!")
-                    return games
-            print(f"⚠️ HTTP Status {res.status_code} on {url[:30]}. Trying fallback...")
-        except Exception as e:
-            print(f"⚠️ Mirror error: {e}")
-    
+def fetch_1xbet_live_games():
+    """Fetch live pre-match fixtures and odds directly from 1xBet feed."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        response = requests.get(ONEXBET_API_URL, headers=headers, timeout=15)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("Value", [])
+    except Exception as e:
+        print(f"Error fetching 1xBet Feed: {e}")
     return []
 
-def extract_over_pick(events, unit_label):
-    overs = []
+def parse_1xbet_markets(game):
+    """Extract real live odds lines directly from 1xBet game objects without any synthetic estimates."""
+    extracted_props = []
+    
+    home_team = game.get("O1", "Home")
+    away_team = game.get("O2", "Away")
+    league = game.get("LE", "Soccer League")
+    match_name = f"{home_team} vs {away_team}"
+    
+    # Check all active odds lines (Events)
+    events = game.get("E", [])
     for ev in events:
-        bet_type = ev.get("T")   # 9 = Total Over in 1xBet system
-        param = ev.get("P")
-        price = ev.get("C")
-
-        if bet_type == 9 and param is not None and price is not None:
-            overs.append({
-                "pick": f"Over ({param}) {unit_label}",
-                "odd": f"{float(price):.2f}",
-                "raw_odd": float(price)
+        sub_id = ev.get("GS") # Sub-market ID in 1xBet structure
+        param = ev.get("P")   # Line barrier (e.g., 23.5, 2.5, 1.5)
+        price = ev.get("C")   # Decimal Odds (e.g., 1.67, 1.37)
+        market_type = ev.get("T") # Bet type ID
+        
+        if not price or not param:
+            continue
+            
+        # Parse Fouls / Corners / Cards Over lines (1xBet Over Type ID = 9 or 11)
+        if sub_id in MARKET_SUB_TYPES and market_type in [9, 11]:
+            category_name = MARKET_SUB_TYPES[sub_id]
+            extracted_props.append({
+                "type": "STAT",
+                "category": category_name,
+                "league": league,
+                "teams": match_name,
+                "pick": f"Over ({param}) {category_name.capitalize()}",
+                "odd": f"{price:.2f}"
             })
 
-    if overs:
-        return min(overs, key=lambda x: abs(x["raw_odd"] - 1.80))
-    return None
+        # Parse Double Chance (1X2 / DC Type IDs)
+        if market_type == 4: # 1X Double Chance
+            extracted_props.append({
+                "type": "ANCHOR",
+                "league": league,
+                "teams": match_name,
+                "pick": f"Double Chance (1X)",
+                "odd": f"{price:.2f}"
+            })
+        elif market_type == 6: # X2 Double Chance
+            extracted_props.append({
+                "type": "ANCHOR",
+                "league": league,
+                "teams": match_name,
+                "pick": f"Double Chance (X2)",
+                "odd": f"{price:.2f}"
+            })
 
-def extract_double_chance(events):
-    for ev in events:
-        bet_type = ev.get("T") # 4 = 1X, 6 = X2
-        price = ev.get("C")
+    return extracted_props
 
-        if bet_type == 4 and price:
-            return {"pick": "Double Chance (1X)", "odd": f"{float(price):.2f}"}
-        elif bet_type == 6 and price:
-            return {"pick": "Double Chance (X2)", "odd": f"{float(price):.2f}"}
-    return None
-
-def build_predictions():
-    games = fetch_1xbet_raw_feed()
+def build_daily_predictions():
+    games = fetch_1xbet_live_games()
     if not games:
-        print("❌ All 1xBet mirrors blocked or returned 0 games.")
+        print("No games retrieved from 1xBet feed.")
         return [], []
 
     stat_props = []
     anchors = []
-    used_matches = set()
-
-    print("\n📊 Extracting Stat Props and Daily Anchors...")
+    processed_matches = set()
 
     for game in games:
-        home = game.get("O1", "")
-        away = game.get("O2", "")
-        league = game.get("LE", "Soccer")
         match_id = game.get("I")
-
-        if not home or not away or match_id in used_matches:
+        if match_id in processed_matches:
             continue
 
-        match_name = f"{home} vs {away}"
-        sub_games = game.get("SG", [])
+        props = parse_1xbet_markets(game)
+        
+        for item in props:
+            if item["type"] == "STAT" and len(stat_props) < 7:
+                stat_props.append(item)
+                processed_matches.add(match_id)
+            elif item["type"] == "ANCHOR" and len(anchors) < 3 and match_id not in processed_matches:
+                anchors.append(item)
+                processed_matches.add(match_id)
 
-        # 1. Extract Stat Props from SubGames (SG) payload
-        for cat in STAT_CATEGORIES:
-            if len(stat_props) >= 7:
+            if len(stat_props) >= 7 and len(anchors) >= 3:
                 break
-
-            for sg in sub_games:
-                sub_title = (sg.get("PN") or sg.get("SN") or "").lower()
-                if any(kw in sub_title for kw in cat["keywords"]):
-                    events = sg.get("E", [])
-                    pick_data = extract_over_pick(events, cat["unit"])
-                    if pick_data:
-                        stat_props.append({
-                            "category": cat["name"],
-                            "teams": match_name,
-                            "league": league,
-                            "pick": pick_data["pick"],
-                            "odd": pick_data["odd"]
-                        })
-                        used_matches.add(match_id)
-                        print(f"  └─ Captured [{cat['name']}]: {match_name} -> {pick_data['pick']} @ {pick_data['odd']}")
-                        break
-
-        # 2. Extract Daily Anchors from main match lines
-        if len(anchors) < 3 and match_id not in used_matches:
-            main_events = game.get("E", [])
-            anchor_pick = extract_double_chance(main_events)
-            if anchor_pick:
-                anchors.append({
-                    "teams": match_name,
-                    "league": league,
-                    "pick": anchor_pick["pick"],
-                    "odd": anchor_pick["odd"]
-                })
-                used_matches.add(match_id)
-                print(f"  └─ Captured [ANCHOR]: {match_name} -> {anchor_pick['pick']} @ {anchor_pick['odd']}")
-
-        if len(stat_props) >= 7 and len(anchors) >= 3:
-            break
 
     return stat_props, anchors
 
 def send_telegram_post(stat_props, anchors):
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-
     if not stat_props and not anchors:
-        msg = f"⚠️ *1XBET STAT BOT NOTICE* ({today_str})\n\n"
-        msg += "Live feed endpoints are currently updating or rate-limited by Cloudflare. Will re-attempt on next scheduled trigger."
-    else:
-        msg = f"🔥 *1XBET REAL-TIME STAT PREDICTIONS* ({today_str})\n"
-        msg += "💯 *Direct Live Bookmaker Feed*\n\n"
+        print("No live 1xBet odds retrieved.")
+        return
 
-        if stat_props:
-            msg += f"⚡ *{len(stat_props)} HEAVY MATCH STAT PROPS*\n-----------------------------------\n"
-            for i, p in enumerate(stat_props, 1):
-                msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n💵 *Odds:* @ {p['odd']}\n\n"
+    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    msg = f"🔥 *1XBET REAL-TIME STAT PREDICTIONS* ({today_str})\n"
+    msg += "💯 *Direct Live Bookmaker Feed*\n\n"
 
-        if anchors:
-            msg += f"🛡️ *{len(anchors)} SURE DAILY ANCHORS*\n-----------------------------------\n"
-            for i, a in enumerate(anchors, 1):
-                msg += f"*{i}. {a['teams']}*\n🏆 {a['league']}\n🔒 *Pick:* {a['pick']}\n💵 *Odds:* @ {a['odd']}\n\n"
+    if stat_props:
+        msg += f"⚡ *7 HEAVY MATCH STAT PROPS*\n-----------------------------------\n"
+        for i, p in enumerate(stat_props, 1):
+            msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n💵 *Odds:* @ {p['odd']}\n\n"
 
-        msg += "📱 *Join Telegram VIP Channel for In-Play Live Value Alerts!*"
+    if anchors:
+        msg += f"🛡️ *3 SURE DAILY ANCHORS*\n-----------------------------------\n"
+        for i, a in enumerate(anchors, 1):
+            msg += f"*{i}. {a['teams']}*\n🏆 {a['league']}\n🔒 *Pick:* {a['pick']}\n💵 *Odds:* @ {a['odd']}\n\n"
+
+    msg += "📱 *Join Telegram VIP Channel for In-Play Live Value Alerts!*"
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     res = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"})
-
-    if res.status_code == 200:
-        print("\n✅ Telegram notification successfully posted!")
-    else:
-        print(f"\n❌ Telegram API Error ({res.status_code}): {res.text}")
+    print("Telegram Status:", res.status_code)
 
 if __name__ == "__main__":
-    stats, anchors = build_predictions()
+    stats, anchors = build_daily_predictions()
     send_telegram_post(stats, anchors)
