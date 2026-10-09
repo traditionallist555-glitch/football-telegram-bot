@@ -19,7 +19,8 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: pip install requests
+        run: pip install requests curl_cffi
+        
 
       - name: Execute Daily Bot
         env:
