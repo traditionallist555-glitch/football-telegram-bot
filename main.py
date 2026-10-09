@@ -6,10 +6,19 @@ from curl_cffi import requests as c_requests
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-# Direct 1xBet Live Line API endpoint
-ONEXBET_FEED_URL = "https://1xbet.com/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true"
+# Primary and Mirror Endpoints for 1xBet Live Line Feeds
+FEED_ENDPOINTS = [
+    "https://1xbet.com/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true",
+    "https://1xbet.ng/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true",
+    "https://888starz.bet/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true"
+]
 
-# 7 Heavy Stat Categories mapped to 1xBet subgame titles
+CUSTOM_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Referer": "https://1xbet.com/",
+}
+
 STAT_CATEGORIES = [
     {"name": "FOULS", "keywords": ["foul", "fouls"], "unit": "Fouls"},
     {"name": "CORNERS", "keywords": ["corner", "corners"], "unit": "Corners"},
@@ -21,28 +30,29 @@ STAT_CATEGORIES = [
 ]
 
 def fetch_1xbet_raw_feed():
-    """Fetch live line feed from 1xBet using browser TLS impersonation."""
-    print("🔍 Connecting to 1xBet line feed via browser TLS impersonation...")
-    try:
-        res = c_requests.get(ONEXBET_FEED_URL, impersonate="chrome120", timeout=25)
-        if res.status_code == 200:
-            data = res.json()
-            games = data.get("Value", [])
-            print(f"✅ Retrieved {len(games)} matches from 1xBet.")
-            return games
-        else:
-            print(f"❌ 1xBet Feed HTTP Error: Status {res.status_code}")
-    except Exception as e:
-        print(f"❌ Connection error fetching 1xBet feed: {e}")
+    """Fetch live line feed from 1xBet endpoints with mirror failovers."""
+    for url in FEED_ENDPOINTS:
+        print(f"🔍 Attempting connection to 1xBet feed: {url[:30]}...")
+        try:
+            res = c_requests.get(url, headers=CUSTOM_HEADERS, impersonate="chrome120", timeout=15)
+            if res.status_code == 200:
+                data = res.json()
+                games = data.get("Value", [])
+                if games:
+                    print(f"✅ Successfully retrieved {len(games)} live matches!")
+                    return games
+            print(f"⚠️ HTTP Status {res.status_code} on {url[:30]}. Trying fallback...")
+        except Exception as e:
+            print(f"⚠️ Mirror error: {e}")
+    
     return []
 
 def extract_over_pick(events, unit_label):
-    """Extract primary Total Over market lines near balanced odds (~1.80)."""
     overs = []
     for ev in events:
-        bet_type = ev.get("T")   # 9 = Total Over in 1xBet API
-        param = ev.get("P")      # Line threshold (e.g., 23.5)
-        price = ev.get("C")      # Decimal odds
+        bet_type = ev.get("T")   # 9 = Total Over in 1xBet system
+        param = ev.get("P")
+        price = ev.get("C")
 
         if bet_type == 9 and param is not None and price is not None:
             overs.append({
@@ -56,7 +66,6 @@ def extract_over_pick(events, unit_label):
     return None
 
 def extract_double_chance(events):
-    """Extract Double Chance options (1X or X2)."""
     for ev in events:
         bet_type = ev.get("T") # 4 = 1X, 6 = X2
         price = ev.get("C")
@@ -70,14 +79,14 @@ def extract_double_chance(events):
 def build_predictions():
     games = fetch_1xbet_raw_feed()
     if not games:
-        print("⚠️ No matches found in 1xBet feed payload.")
+        print("❌ All 1xBet mirrors blocked or returned 0 games.")
         return [], []
 
     stat_props = []
     anchors = []
     used_matches = set()
 
-    print("\n📊 Extracting 7 Stat Props and 3 Anchors from live subgame feeds...")
+    print("\n📊 Extracting Stat Props and Daily Anchors...")
 
     for game in games:
         home = game.get("O1", "")
@@ -113,7 +122,7 @@ def build_predictions():
                         print(f"  └─ Captured [{cat['name']}]: {match_name} -> {pick_data['pick']} @ {pick_data['odd']}")
                         break
 
-        # 2. Extract Daily Anchors from main game events
+        # 2. Extract Daily Anchors from main match lines
         if len(anchors) < 3 and match_id not in used_matches:
             main_events = game.get("E", [])
             anchor_pick = extract_double_chance(main_events)
@@ -133,35 +142,35 @@ def build_predictions():
     return stat_props, anchors
 
 def send_telegram_post(stat_props, anchors):
-    if not stat_props and not anchors:
-        print("\n❌ No predictions found. Skipping Telegram message.")
-        return
-
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    msg = f"🔥 *1XBET REAL-TIME STAT PREDICTIONS* ({today_str})\n"
-    msg += "💯 *Direct Live Bookmaker Feed*\n\n"
 
-    if stat_props:
-        msg += f"⚡ *{len(stat_props)} HEAVY MATCH STAT PROPS*\n-----------------------------------\n"
-        for i, p in enumerate(stat_props, 1):
-            msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n💵 *Odds:* @ {p['odd']}\n\n"
+    if not stat_props and not anchors:
+        msg = f"⚠️ *1XBET STAT BOT NOTICE* ({today_str})\n\n"
+        msg += "Live feed endpoints are currently updating or rate-limited by Cloudflare. Will re-attempt on next scheduled trigger."
+    else:
+        msg = f"🔥 *1XBET REAL-TIME STAT PREDICTIONS* ({today_str})\n"
+        msg += "💯 *Direct Live Bookmaker Feed*\n\n"
 
-    if anchors:
-        msg += f"🛡️ *{len(anchors)} SURE DAILY ANCHORS*\n-----------------------------------\n"
-        for i, a in enumerate(anchors, 1):
-            msg += f"*{i}. {a['teams']}*\n🏆 {a['league']}\n🔒 *Pick:* {a['pick']}\n💵 *Odds:* @ {a['odd']}\n\n"
+        if stat_props:
+            msg += f"⚡ *{len(stat_props)} HEAVY MATCH STAT PROPS*\n-----------------------------------\n"
+            for i, p in enumerate(stat_props, 1):
+                msg += f"*{i}. [{p['category']}]*\n🏆 {p['league']}\n⚔️ {p['teams']}\n🎯 *Pick:* {p['pick']}\n💵 *Odds:* @ {p['odd']}\n\n"
 
-    msg += "📱 *Join Telegram VIP Channel for In-Play Live Value Alerts!*"
+        if anchors:
+            msg += f"🛡️ *{len(anchors)} SURE DAILY ANCHORS*\n-----------------------------------\n"
+            for i, a in enumerate(anchors, 1):
+                msg += f"*{i}. {a['teams']}*\n🏆 {a['league']}\n🔒 *Pick:* {a['pick']}\n💵 *Odds:* @ {a['odd']}\n\n"
+
+        msg += "📱 *Join Telegram VIP Channel for In-Play Live Value Alerts!*"
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     res = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"})
 
     if res.status_code == 200:
-        print("\n✅ Telegram prediction message successfully posted!")
+        print("\n✅ Telegram notification successfully posted!")
     else:
         print(f"\n❌ Telegram API Error ({res.status_code}): {res.text}")
 
 if __name__ == "__main__":
     stats, anchors = build_predictions()
     send_telegram_post(stats, anchors)
-            
