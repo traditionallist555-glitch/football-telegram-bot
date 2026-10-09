@@ -6,10 +6,10 @@ from curl_cffi import requests as c_requests
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-# 1xBet Direct Mobile API (Soccer = Sport 1)
+# Direct 1xBet Live Line API endpoint
 ONEXBET_FEED_URL = "https://1xbet.com/LineFeed/GetGamesZip?sports=1&typeG=1&mCount=100&lng=en&subgames=true"
 
-# Stat sub-game names as listed inside 1xBet's system
+# 7 Heavy Stat Categories mapped to 1xBet subgame titles
 STAT_CATEGORIES = [
     {"name": "FOULS", "keywords": ["foul", "fouls"], "unit": "Fouls"},
     {"name": "CORNERS", "keywords": ["corner", "corners"], "unit": "Corners"},
@@ -21,31 +21,30 @@ STAT_CATEGORIES = [
 ]
 
 def fetch_1xbet_raw_feed():
-    """Fetch live pre-match line directly from 1xBet using browser TLS impersonation."""
-    print("🔍 Requesting live feed directly from 1xBet API...")
+    """Fetch live line feed from 1xBet using browser TLS impersonation."""
+    print("🔍 Connecting to 1xBet line feed via browser TLS impersonation...")
     try:
-        # Impersonate Chrome 120 browser TLS fingerprint to pass Cloudflare
-        res = c_requests.get(ONEXBET_FEED_URL, impersonate="chrome120", timeout=20)
+        res = c_requests.get(ONEXBET_FEED_URL, impersonate="chrome120", timeout=25)
         if res.status_code == 200:
             data = res.json()
             games = data.get("Value", [])
-            print(f"✅ Successfully retrieved {len(games)} live matches from 1xBet.")
+            print(f"✅ Retrieved {len(games)} matches from 1xBet.")
             return games
         else:
-            print(f"❌ 1xBet HTTP Error {res.status_code}: Cloudflare or IP block.")
+            print(f"❌ 1xBet Feed HTTP Error: Status {res.status_code}")
     except Exception as e:
-        print(f"❌ Error fetching 1xBet feed: {e}")
+        print(f"❌ Connection error fetching 1xBet feed: {e}")
     return []
 
 def extract_over_pick(events, unit_label):
-    """Extract the primary Over bet line with realistic odds around 1.60 - 2.00."""
+    """Extract primary Total Over market lines near balanced odds (~1.80)."""
     overs = []
     for ev in events:
-        bet_type = ev.get("T")   # 9 = Total Over in 1xBet system
-        param = ev.get("P")      # Barrier line (e.g. 23.5, 2.5)
-        price = ev.get("C")      # Decimal Odds (e.g. 1.67)
+        bet_type = ev.get("T")   # 9 = Total Over in 1xBet API
+        param = ev.get("P")      # Line threshold (e.g., 23.5)
+        price = ev.get("C")      # Decimal odds
 
-        if bet_type == 9 and param and price:
+        if bet_type == 9 and param is not None and price is not None:
             overs.append({
                 "pick": f"Over ({param}) {unit_label}",
                 "odd": f"{float(price):.2f}",
@@ -53,12 +52,11 @@ def extract_over_pick(events, unit_label):
             })
 
     if overs:
-        # Select balanced odds closest to 1.80
         return min(overs, key=lambda x: abs(x["raw_odd"] - 1.80))
     return None
 
 def extract_double_chance(events):
-    """Extract 1X or X2 Double Chance from match events."""
+    """Extract Double Chance options (1X or X2)."""
     for ev in events:
         bet_type = ev.get("T") # 4 = 1X, 6 = X2
         price = ev.get("C")
@@ -72,14 +70,14 @@ def extract_double_chance(events):
 def build_predictions():
     games = fetch_1xbet_raw_feed()
     if not games:
-        print("⚠️ No matches available to process.")
+        print("⚠️ No matches found in 1xBet feed payload.")
         return [], []
 
     stat_props = []
     anchors = []
     used_matches = set()
 
-    print("\n📊 Extracting Stat Props and Anchors from 1xBet payload...")
+    print("\n📊 Extracting 7 Stat Props and 3 Anchors from live subgame feeds...")
 
     for game in games:
         home = game.get("O1", "")
@@ -91,18 +89,15 @@ def build_predictions():
             continue
 
         match_name = f"{home} vs {away}"
-
-        # 1. Inspect SubGames (SG) where 1xBet stores Fouls, Cards, Offsides, etc.
         sub_games = game.get("SG", [])
-        
+
+        # 1. Extract Stat Props from SubGames (SG) payload
         for cat in STAT_CATEGORIES:
             if len(stat_props) >= 7:
                 break
 
             for sg in sub_games:
                 sub_title = (sg.get("PN") or sg.get("SN") or "").lower()
-                
-                # Match stat sub-tab (e.g. "Fouls", "Offsides", "Yellow Cards")
                 if any(kw in sub_title for kw in cat["keywords"]):
                     events = sg.get("E", [])
                     pick_data = extract_over_pick(events, cat["unit"])
@@ -118,7 +113,7 @@ def build_predictions():
                         print(f"  └─ Captured [{cat['name']}]: {match_name} -> {pick_data['pick']} @ {pick_data['odd']}")
                         break
 
-        # 2. Extract Anchor (Double Chance) from Main Game
+        # 2. Extract Daily Anchors from main game events
         if len(anchors) < 3 and match_id not in used_matches:
             main_events = game.get("E", [])
             anchor_pick = extract_double_chance(main_events)
@@ -139,12 +134,12 @@ def build_predictions():
 
 def send_telegram_post(stat_props, anchors):
     if not stat_props and not anchors:
-        print("\n❌ No predictions gathered. Telegram post aborted.")
+        print("\n❌ No predictions found. Skipping Telegram message.")
         return
 
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
     msg = f"🔥 *1XBET REAL-TIME STAT PREDICTIONS* ({today_str})\n"
-    msg += "💯 *Verified Live 1xBet Feed*\n\n"
+    msg += "💯 *Direct Live Bookmaker Feed*\n\n"
 
     if stat_props:
         msg += f"⚡ *{len(stat_props)} HEAVY MATCH STAT PROPS*\n-----------------------------------\n"
@@ -160,13 +155,13 @@ def send_telegram_post(stat_props, anchors):
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     res = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"})
-    
+
     if res.status_code == 200:
-        print("\n✅ Telegram post sent successfully!")
+        print("\n✅ Telegram prediction message successfully posted!")
     else:
-        print(f"\n❌ Telegram Error ({res.status_code}): {res.text}")
+        print(f"\n❌ Telegram API Error ({res.status_code}): {res.text}")
 
 if __name__ == "__main__":
     stats, anchors = build_predictions()
     send_telegram_post(stats, anchors)
-        
+            
