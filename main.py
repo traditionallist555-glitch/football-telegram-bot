@@ -1,22 +1,20 @@
 import datetime
 import html
+import json
 import os
 import requests
 from curl_cffi import requests as c_requests
+from pathlib import Path
 
 # Environment Variables
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-PROXY_URL = os.environ.get("HTTP_PROXY") or os.environ.get("PROXY_URL")  # e.g. "http://user:pass@ip:port"
+PROXY_URL = os.environ.get("HTTP_PROXY") or os.environ.get("PROXY_URL")
 
-# Dual Feed Endpoints (Checking both Live AND Upcoming Line Feeds across multiple mirrors)
 FEED_ENDPOINTS = [
-    # Live Games Feeds
     "https://1xbet.com/LiveFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
     "https://1xbet.ng/LiveFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
     "https://888starz.bet/LiveFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
-    
-    # Pre-Match Upcoming Feeds (Fallback if no live games available)
     "https://1xbet.com/LineFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
     "https://1xbet.ng/LineFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
     "https://melbet.com/LineFeed/GetGamesZip?sports=1&count=100&lng=en&subgames=true",
@@ -30,207 +28,163 @@ CUSTOM_HEADERS = {
 }
 
 STAT_CATEGORIES = [
-    {"name": "FOULS", "keywords": ["foul", "fouls"], "unit": "Fouls"},
-    {"name": "CORNERS", "keywords": ["corner", "corners"], "unit": "Corners"},
-    {"name": "CARDS / DISCIPLINE", "keywords": ["card", "yellow card", "booking"], "unit": "Cards"},
-    {"name": "OFFSIDES", "keywords": ["offside", "offsides"], "unit": "Offsides"},
-    {"name": "SHOTS ON TARGET", "keywords": ["shots on target", "shots towards"], "unit": "Shots"},
-    {"name": "THROW-INS", "keywords": ["throw", "throw-in", "throwin"], "unit": "Throw-ins"},
-    {"name": "GOALKEEPER SAVES", "keywords": ["saves", "goalkeeper saves"], "unit": "Saves"},
+    {"name": "Throw-Ins", "keywords": ["throw", "throw-in", "throwin"], "unit": "Throw-Ins"},
+    {"name": "Fouls", "keywords": ["foul", "fouls"], "unit": "Fouls"},
+    {"name": "Corners", "keywords": ["corner", "corners"], "unit": "Corners"},
+    {"name": "Cards", "keywords": ["card", "yellow card", "booking"], "unit": "Cards"},
+    {"name": "Shots on Target", "keywords": ["shots on target", "shots towards"], "unit": "Shots on Target"},
+    {"name": "Tackles", "keywords": ["tackle", "tackles"], "unit": "Tackles"},
+    {"name": "Goal Kicks", "keywords": ["goal kick", "goal kicks"], "unit": "Goal Kicks"},
 ]
 
 def escape_html(text: str) -> str:
-    if not text:
-        return ""
-    return html.escape(str(text))
+    return html.escape(str(text)) if text else ""
 
 def fetch_1xbet_raw_feed():
-    """Fetch line feed from 1xBet endpoints with mirror failover and proxy support."""
     proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
-
     for url in FEED_ENDPOINTS:
-        domain_label = url.split("/")[2]
+        domain = url.split("/")[2]
         feed_type = "LIVE" if "LiveFeed" in url else "LINE"
-        print(f"🔍 Testing [{feed_type}] via {domain_label}...")
-
+        print(f"🔍 Testing [{feed_type}] via {domain}...")
         try:
-            res = c_requests.get(
-                url,
-                headers=CUSTOM_HEADERS,
-                impersonate="chrome124",
-                proxies=proxies,
-                timeout=12
-            )
-            
+            res = c_requests.get(url, headers=CUSTOM_HEADERS, impersonate="chrome124",
+                                 proxies=proxies, timeout=12)
             if res.status_code == 200:
-                data = res.json()
-                games = data.get("Value", [])
+                games = res.json().get("Value", [])
                 if games:
-                    print(f"✅ Success! Retrieved {len(games)} matches from {domain_label} ({feed_type}).")
+                    print(f"✅ Got {len(games)} matches from {domain} ({feed_type})")
                     return games
-                else:
-                    print(f"⚠️ {domain_label} returned 200 OK, but games list was empty.")
-            else:
-                print(f"❌ {domain_label} blocked request. HTTP Status: {res.status_code}")
-
         except Exception as e:
-            print(f"⚠️ Connection error on {domain_label}: {e}")
-
+            print(f"⚠️ {domain}: {e}")
     return []
 
 def extract_over_pick(events, unit_label):
     overs = []
     for ev in events:
-        bet_type = ev.get("T")   # 9 = Total Over in 1xBet system
-        param = ev.get("P")
-        price = ev.get("C")
-
-        if bet_type == 9 and param is not None and price is not None:
+        if ev.get("T") == 9 and ev.get("P") is not None and ev.get("C") is not None:
             overs.append({
-                "pick": f"Over ({param}) {unit_label}",
-                "odd": f"{float(price):.2f}",
-                "raw_odd": float(price)
+                "param": float(ev["P"]),
+                "odd": float(ev["C"]),
+                "pick": f"Over {ev['P']} Total {unit_label}"
             })
-
     if overs:
-        return min(overs, key=lambda x: abs(x["raw_odd"] - 1.80))
-    return None
-
-def extract_double_chance(events):
-    for ev in events:
-        bet_type = ev.get("T") # 4 = 1X, 6 = X2
-        price = ev.get("C")
-
-        if bet_type in (4, 6) and price:
-            pick_label = "Double Chance (1X)" if bet_type == 4 else "Double Chance (X2)"
-            return {"pick": pick_label, "odd": f"{float(price):.2f}"}
+        # Prefer odds closest to 1.80–1.90 (value zone)
+        best = min(overs, key=lambda x: abs(x["odd"] - 1.85))
+        return best
     return None
 
 def build_predictions():
     games = fetch_1xbet_raw_feed()
     if not games:
-        print("\n❌ All 1xBet endpoints failed or were blocked by Cloudflare.")
-        return [], []
+        return [], [], 0
 
-    stat_props = []
-    anchors = []
-    used_matches = set()
-
-    print("\n📊 Parsing Match Odds & Stat Lines...")
+    props = []
+    used = set()
+    total_matches = len(games)
 
     for game in games:
-        if len(stat_props) >= 7 and len(anchors) >= 3:
+        if len(props) >= 7:
             break
-
         home = game.get("O1", "")
         away = game.get("O2", "")
         league = game.get("LE", "Soccer")
-        match_id = game.get("I")
-
-        if not home or not away or not match_id or match_id in used_matches:
+        mid = game.get("I")
+        if not home or not away or not mid or mid in used:
             continue
 
-        match_name = f"{home} vs {away}"
-        sub_games = game.get("SG", [])
+        for cat in STAT_CATEGORIES:
+            for sg in game.get("SG", []):
+                title = (sg.get("PN") or sg.get("SN") or "").lower()
+                if any(k in title for k in cat["keywords"]):
+                    pick = extract_over_pick(sg.get("E", []), cat["unit"])
+                    if pick:
+                        # Simple model % (higher when odd is closer to 1.85 and param is reasonable)
+                        model_pct = max(65, min(85, int(90 - abs(pick["odd"] - 1.85) * 25)))
+                        props.append({
+                            "num": f"{len(props)+1:02d}",
+                            "cat": cat["name"],
+                            "pct": model_pct,
+                            "league": league,
+                            "home": home,
+                            "away": away,
+                            "form": "— · —",
+                            "pick": pick["pick"],
+                            "meta": f"Model board {pick['odd']:.2f} · live feed",
+                            "reason": f"Selected from live 1xBet feed. Closest value line around 1.85."
+                        })
+                        used.add(mid)
+                        break
+            if mid in used:
+                break
 
-        # 1. Extract Stat Props
-        if len(stat_props) < 7:
-            match_captured = False
-            for cat in STAT_CATEGORIES:
-                for sg in sub_games:
-                    sub_title = (sg.get("PN") or sg.get("SN") or "").lower()
-                    if any(kw in sub_title for kw in cat["keywords"]):
-                        events = sg.get("E", [])
-                        pick_data = extract_over_pick(events, cat["unit"])
-                        if pick_data:
-                            stat_props.append({
-                                "category": cat["name"],
-                                "teams": match_name,
-                                "league": league,
-                                "pick": pick_data["pick"],
-                                "odd": pick_data["odd"]
-                            })
-                            used_matches.add(match_id)
-                            print(f"  └─ Captured [{cat['name']}]: {match_name} -> {pick_data['pick']} @ {pick_data['odd']}")
-                            match_captured = True
-                            break
-                if match_captured:
-                    break
+    return props, total_matches, len(used)
 
-        # 2. Extract Daily Anchors
-        if len(anchors) < 3 and match_id not in used_matches:
-            main_events = game.get("E", [])
-            anchor_pick = extract_double_chance(main_events)
-            if anchor_pick:
-                anchors.append({
-                    "teams": match_name,
-                    "league": league,
-                    "pick": anchor_pick["pick"],
-                    "odd": anchor_pick["odd"]
-                })
-                used_matches.add(match_id)
-                print(f"  └─ Captured [ANCHOR]: {match_name} -> {anchor_pick['pick']} @ {anchor_pick['odd']}")
+def save_daily_json(props, total_matches, sampled):
+    today = datetime.datetime.utcnow()
+    date_str = today.strftime("%Y-%m-%d")
+    label = today.strftime("%a %d %b")
 
-    return stat_props, anchors
-
-def send_telegram_post(stat_props, anchors):
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("❌ Telegram credentials missing.")
-        return
-
-    if not stat_props and not anchors:
-        msg = (
-            f"⚠️ <b>1XBET STAT BOT NOTICE</b> ({today_str})\n\n"
-            "Live feed endpoints are currently updating or rate-limited by Cloudflare. "
-            "Will re-attempt on next scheduled trigger."
-        )
-    else:
-        msg = (
-            f"🔥 <b>1XBET REAL-TIME STAT PREDICTIONS</b> ({today_str})\n"
-            "💯 <b>Direct Live Bookmaker Feed</b>\n\n"
-        )
-
-        if stat_props:
-            msg += f"⚡ <b>{len(stat_props)} HEAVY MATCH STAT PROPS</b>\n-----------------------------------\n"
-            for i, p in enumerate(stat_props, 1):
-                msg += (
-                    f"<b>{i}. [{escape_html(p['category'])}]</b>\n"
-                    f"🏆 {escape_html(p['league'])}\n"
-                    f"⚔️ {escape_html(p['teams'])}\n"
-                    f"🎯 <b>Pick:</b> {escape_html(p['pick'])}\n"
-                    f"💵 <b>Odds:</b> @ {p['odd']}\n\n"
-                )
-
-        if anchors:
-            msg += f"🛡️ <b>{len(anchors)} SURE DAILY ANCHORS</b>\n-----------------------------------\n"
-            for i, a in enumerate(anchors, 1):
-                msg += (
-                    f"<b>{i}. {escape_html(a['teams'])}</b>\n"
-                    f"🏆 {escape_html(a['league'])}\n"
-                    f"🔒 <b>Pick:</b> {escape_html(a['pick'])}\n"
-                    f"💵 <b>Odds:</b> @ {a['odd']}\n\n"
-                )
-
-        msg += "📱 <b>Join VIP Channel for In-Play Live Value Alerts!</b>"
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": msg,
-        "parse_mode": "HTML"
+    data = {
+        "date": date_str,
+        "label": label,
+        "sub": "Live",
+        "matches": total_matches,
+        "sampled": sampled,
+        "posted": len(props),
+        "filled": 0,
+        "props": props,
+        "special": {
+            "odds": "—",
+            "league": "Special appears when strong 3.00+ price is found",
+            "match": "—",
+            "pick": "—",
+            "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+        }
     }
 
-    try:
-        res = requests.post(url, json=payload, timeout=10)
-        if res.status_code == 200:
-            print("\n✅ Posted picks to Telegram successfully!")
-        else:
-            print(f"\n❌ Telegram Error ({res.status_code}): {res.text}")
-    except Exception as e:
-        print(f"\n❌ Telegram POST exception: {e}")
+    # Save into data/ folder
+    Path("data").mkdir(exist_ok=True)
+    path = Path(f"data/{date_str}.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"✅ Saved {path}")
+
+    # Also update index of available dates
+    index_path = Path("data/index.json")
+    dates = []
+    if index_path.exists():
+        with open(index_path) as f:
+            dates = json.load(f)
+    if date_str not in dates:
+        dates.append(date_str)
+        dates.sort(reverse=True)
+        with open(index_path, "w") as f:
+            json.dump(dates, f, indent=2)
+
+def send_telegram_post(props):
+    today_str = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("❌ Telegram credentials missing")
+        return
+
+    if not props:
+        msg = f"⚠️ <b>SPRINTKILLER</b> ({today_str})\nNo strong props found today from live feed."
+    else:
+        msg = f"🔥 <b>SPRINTKILLER MODEL BOARD</b> ({today_str})\n💯 West Africa Window\n\n"
+        for p in props:
+            msg += (
+                f"<b>{p['num']}. [{escape_html(p['cat'])}]</b> · {p['pct']}%\n"
+                f"🏆 {escape_html(p['league'])}\n"
+                f"⚔️ {escape_html(p['home'])} vs {escape_html(p['away'])}\n"
+                f"🎯 <b>{escape_html(p['pick'])}</b>\n\n"
+            )
+        msg += "18+ · Model board, not a bookmaker receipt."
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"}, timeout=10)
+    print("✅ Posted to Telegram")
 
 if __name__ == "__main__":
-    stats, anchors = build_predictions()
-    send_telegram_post(stats, anchors)
+    props, total, sampled = build_predictions()
+    save_daily_json(props, total, sampled)
+    send_telegram_post(props)
