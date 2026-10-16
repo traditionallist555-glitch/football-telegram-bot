@@ -72,7 +72,6 @@
 
   <div id="propsContainer"><div class="loading">Loading live data...</div></div>
 
-  <!-- New Special Shots Towards Goal Section -->
   <div id="specialShotsSection" style="display:none">
     <div class="section-title">🎯 3 Carefully Selected · Shots Towards Goal</div>
     <div id="specialShotsContainer"></div>
@@ -101,38 +100,36 @@ async function loadIndex() {
     currentIndex = 0;
     loadDay(dates[0]);
   } catch (e) {
-    document.getElementById("propsContainer").innerHTML = `<div class="empty">No data yet.<br>Run the bot first or wait for the next scheduled run.</div>`;
+    document.getElementById("propsContainer").innerHTML = '<div class="empty">No data yet.<br>Run the bot first or wait for the next scheduled run.</div>';
   }
 }
 
 function createPropCard(p) {
-  return `
-    <div class="prop-card">
-      <div class="prop-header">
-        <div class="prop-num">\( {p.num} <span> \){p.cat}</span></div>
-        <div class="model-pct">${p.pct}%</div>
-      </div>
-      <div class="league-time">${p.league}</div>
-      <div class="teams">
-        <div class="team-logo">${(p.home||"?")[0]}</div>
-        ${p.home} vs ${p.away}
-        <div class="team-logo">${(p.away||"?")[0]}</div>
-      </div>
-      <div class="form">${p.form || "—"}</div>
-      <div class="pick-line">${p.pick}</div>
-      <div class="progress"><div class="progress-bar" style="width:${p.pct}%"></div></div>
-      <div class="meta">${p.meta || ""}</div>
-      <div class="reason">${p.reason || ""}</div>
-    </div>
-  `;
+  return '<div class="prop-card">' +
+    '<div class="prop-header">' +
+      '<div class="prop-num">' + p.num + ' <span>' + p.cat + '</span></div>' +
+      '<div class="model-pct">' + p.pct + '%</div>' +
+    '</div>' +
+    '<div class="league-time">' + p.league + '</div>' +
+    '<div class="teams">' +
+      '<div class="team-logo">' + (p.home || "?")[0] + '</div>' +
+      p.home + ' vs ' + p.away +
+      '<div class="team-logo">' + (p.away || "?")[0] + '</div>' +
+    '</div>' +
+    '<div class="form">' + (p.form || "—") + '</div>' +
+    '<div class="pick-line">' + p.pick + '</div>' +
+    '<div class="progress"><div class="progress-bar" style="width:' + p.pct + '%"></div></div>' +
+    '<div class="meta">' + (p.meta || "") + '</div>' +
+    '<div class="reason">' + (p.reason || "") + '</div>' +
+  '</div>';
 }
 
 async function loadDay(dateStr) {
-  document.getElementById("propsContainer").innerHTML = `<div class="loading">Loading ${dateStr}...</div>`;
+  document.getElementById("propsContainer").innerHTML = '<div class="loading">Loading ' + dateStr + '...</div>';
   document.getElementById("specialShotsSection").style.display = "none";
   
   try {
-    const res = await fetch(`data/\( {dateStr}.json?t= \){Date.now()}`);
+    const res = await fetch('data/' + dateStr + '.json?t=' + Date.now());
     const d = await res.json();
 
     document.getElementById("dayLabel").textContent = d.label || dateStr;
@@ -144,18 +141,16 @@ async function loadDay(dateStr) {
 
     const container = document.getElementById("propsContainer");
     if (!d.props || d.props.length === 0) {
-      container.innerHTML = `<div class="empty">No strong props found for this day.</div>`;
+      container.innerHTML = '<div class="empty">No strong props found for this day.</div>';
     } else {
-      container.innerHTML = d.props.map(p => createPropCard(p)).join("");
+      container.innerHTML = d.props.map(function(p){ return createPropCard(p); }).join("");
     }
 
-    // Special Shots Towards Goal section
     if (d.special_shots && d.special_shots.length > 0) {
       document.getElementById("specialShotsSection").style.display = "block";
-      document.getElementById("specialShotsContainer").innerHTML = d.special_shots.map(p => createPropCard(p)).join("");
+      document.getElementById("specialShotsContainer").innerHTML = d.special_shots.map(function(p){ return createPropCard(p); }).join("");
     }
 
-    // Old 3.00+ special (kept for compatibility)
     if (d.special && d.special.pick && d.special.pick !== "—") {
       document.getElementById("specialBox").style.display = "block";
       document.getElementById("specialOdds").textContent = d.special.odds;
@@ -167,17 +162,17 @@ async function loadDay(dateStr) {
       document.getElementById("specialBox").style.display = "none";
     }
   } catch (e) {
-    document.getElementById("propsContainer").innerHTML = `<div class="empty">Could not load ${dateStr}</div>`;
+    document.getElementById("propsContainer").innerHTML = '<div class="empty">Could not load ' + dateStr + '</div>';
   }
 }
 
-document.getElementById("prevBtn").onclick = () => {
+document.getElementById("prevBtn").onclick = function() {
   if (currentIndex < dates.length - 1) {
     currentIndex++;
     loadDay(dates[currentIndex]);
   }
 };
-document.getElementById("nextBtn").onclick = () => {
+document.getElementById("nextBtn").onclick = function() {
   if (currentIndex > 0) {
     currentIndex--;
     loadDay(dates[currentIndex]);
@@ -187,4 +182,4 @@ document.getElementById("nextBtn").onclick = () => {
 loadIndex();
 </script>
 </body>
-     </html>
+</html>
