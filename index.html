@@ -2,90 +2,231 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Sprintkiller • West Africa Window</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0b0f14;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.4;padding-bottom:40px}
-  .container{max-width:480px;margin:0 auto;padding:12px}
-  .header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 16px}
-  .date-nav{display:flex;align-items:center;gap:12px;background:#151b23;border-radius:30px;padding:8px 16px}
-  .date-nav button{background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:4px 8px}
-  .date-nav button:hover{color:#fff}
-  .date-display{text-align:center}
-  .date-display .day{font-size:17px;font-weight:600}
-  .date-display .sub{font-size:12px;color:#64748b}
-  .window-select{margin:12px 0;background:#151b23;border:1px solid #1e293b;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#94a3b8}
-  .rebuild-btn{width:100%;background:#1e293b;border:none;color:#e2e8f0;padding:12px;border-radius:12px;font-size:14px;margin-bottom:18px;cursor:pointer}
-  .disclaimer{font-size:11px;color:#64748b;text-align:center;margin-bottom:16px;letter-spacing:.5px}
-  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-  .stat-box{background:#151b23;border-radius:14px;padding:14px;text-align:center}
-  .stat-box .label{font-size:12px;color:#64748b;margin-bottom:4px}
-  .stat-box .value{font-size:22px;font-weight:700}
-  .prop-card{background:#151b23;border-radius:16px;padding:16px;margin-bottom:14px}
-  .prop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-  .prop-num{font-size:13px;color:#94a3b8}
-  .prop-num span{color:#38bdf8;font-weight:600}
-  .model-pct{font-size:18px;font-weight:700;color:#fbbf24}
-  .league-time{font-size:12px;color:#64748b;margin-bottom:10px}
-  .teams{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:600;font-size:15px}
-  .team-logo{width:22px;height:22px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:11px}
-  .form{font-size:11px;color:#64748b;margin-bottom:10px;letter-spacing:1px}
-  .pick-line{font-size:16px;font-weight:700;margin-bottom:8px}
-  .progress{height:6px;background:#1e293b;border-radius:3px;margin-bottom:10px;overflow:hidden}
-  .progress-bar{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px}
-  .meta{font-size:11px;color:#94a3b8;margin-bottom:6px}
-  .reason{font-size:12px;color:#94a3b8;line-height:1.45}
-  .section-title{font-size:15px;font-weight:700;color:#fbbf24;margin:28px 0 14px;padding-left:4px;border-left:3px solid #fbbf24}
-  .special{background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #fbbf24;border-radius:16px;padding:16px;margin:20px 0}
-  .special-title{font-size:14px;color:#fbbf24;font-weight:600;margin-bottom:8px}
-  .special-odds{font-size:22px;font-weight:700;color:#fbbf24;float:right}
-  .special-match{font-size:15px;font-weight:600;margin:8px 0 4px}
-  .special-pick{font-size:16px;font-weight:700;margin-bottom:8px}
-  .footer{text-align:center;font-size:11px;color:#475569;margin-top:24px;line-height:1.5}
-  .loading,.empty{text-align:center;padding:40px 20px;color:#64748b}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0b0f14;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+    padding-bottom: 50px;
+  }
+  .container { max-width: 480px; margin: 0 auto; padding: 14px; }
+
+  /* Header / Date */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #151b23;
+    border-radius: 40px;
+    padding: 10px 18px;
+    margin-bottom: 16px;
+  }
+  .date-nav button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 22px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .date-display { text-align: center; }
+  .date-display .day { font-size: 18px; font-weight: 700; }
+  .date-display .sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  .window-select {
+    background: #151b23;
+    border: 1px solid #1e293b;
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 14px;
+  }
+
+  .rebuild-btn {
+    width: 100%;
+    background: #1e293b;
+    border: none;
+    color: #e2e8f0;
+    padding: 13px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    cursor: pointer;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: #64748b;
+    text-align: center;
+    letter-spacing: 0.4px;
+    margin-bottom: 18px;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .stat-box {
+    background: #151b23;
+    border-radius: 16px;
+    padding: 16px 10px;
+    text-align: center;
+  }
+  .stat-box .label { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+  .stat-box .value { font-size: 24px; font-weight: 700; }
+
+  /* Prop Cards */
+  .prop-card {
+    background: #151b23;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 16px;
+    border: 1px solid #1e293b;
+  }
+  .prop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .prop-num { font-size: 13px; color: #94a3b8; }
+  .prop-num span { color: #38bdf8; font-weight: 600; }
+  .model-pct { font-size: 20px; font-weight: 700; color: #fbbf24; }
+
+  .league-time { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+
+  .teams {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .team-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .form { font-size: 11px; color: #64748b; letter-spacing: 1px; margin-bottom: 12px; }
+
+  .pick-line { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+
+  .progress {
+    height: 7px;
+    background: #1e293b;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 4px;
+  }
+
+  .meta { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+  .reason { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+
+  /* Special Section */
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fbbf24;
+    margin: 30px 0 16px;
+    padding-left: 10px;
+    border-left: 4px solid #fbbf24;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #475569;
+    margin-top: 30px;
+    line-height: 1.6;
+  }
+
+  .loading, .empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #64748b;
+    font-size: 15px;
+  }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <div class="date-nav">
-      <button id="prevBtn">‹</button>
-      <div class="date-display">
-        <div class="day" id="dayLabel">Loading...</div>
-        <div class="sub" id="daySub"></div>
-      </div>
-      <button id="nextBtn">›</button>
+
+  <div class="date-nav">
+    <button id="prevBtn">‹</button>
+    <div class="date-display">
+      <div class="day" id="dayLabel">Loading...</div>
+      <div class="sub" id="daySub"></div>
     </div>
+    <button id="nextBtn">›</button>
   </div>
 
-  <div class="window-select"><span>West Africa · 00:00–23:59</span><span>▼</span></div>
+  <div class="window-select">
+    <span>West Africa · 00:00–23:59</span>
+    <span>▼</span>
+  </div>
+
   <button class="rebuild-btn" onclick="location.reload()">↻ Rebuild ticket</button>
+
   <div class="disclaimer">WEST AFRICA WINDOW · MODEL BOARD, NOT A BOOKMAKER RECEIPT</div>
 
   <div class="stats-grid">
-    <div class="stat-box"><div class="label">Matches</div><div class="value" id="statMatches">-</div></div>
-    <div class="stat-box"><div class="label">Sampled</div><div class="value" id="statSampled">-</div></div>
-    <div class="stat-box"><div class="label">Posted</div><div class="value" id="statPosted">-</div></div>
-    <div class="stat-box"><div class="label">Filled</div><div class="value" id="statFilled">-</div></div>
+    <div class="stat-box">
+      <div class="label">Matches</div>
+      <div class="value" id="statMatches">-</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Sampled</div>
+      <div class="value" id="statSampled">-</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Posted</div>
+      <div class="value" id="statPosted">-</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Filled</div>
+      <div class="value" id="statFilled">-</div>
+    </div>
   </div>
 
-  <div id="propsContainer"><div class="loading">Loading live data...</div></div>
+  <div id="propsContainer">
+    <div class="loading">Loading live data...</div>
+  </div>
 
   <div id="specialShotsSection" style="display:none">
     <div class="section-title">🎯 3 Carefully Selected · Shots Towards Goal</div>
     <div id="specialShotsContainer"></div>
   </div>
 
-  <div class="special" id="specialBox" style="display:none">
-    <div class="special-title">3.00+ special of the day <span class="special-odds" id="specialOdds"></span></div>
-    <div class="league-time" id="specialLeague"></div>
-    <div class="special-match" id="specialMatch"></div>
-    <div class="special-pick" id="specialPick"></div>
-    <div class="reason" id="specialReason"></div>
+  <div class="footer">
+    <strong>18+ · gamble responsibly.</strong><br>
+    A high model rate is not a sure thing.<br>
+    Figures are a model, not a bookmaker receipt.
   </div>
-
-  <div class="footer"><strong>18+ · gamble responsibly.</strong><br>A high model rate is not a sure thing.<br>Figures are a model, not a bookmaker receipt.</div>
 </div>
 
 <script>
@@ -96,40 +237,44 @@ async function loadIndex() {
   try {
     const res = await fetch('data/index.json?t=' + Date.now());
     dates = await res.json();
-    if (dates.length === 0) throw new Error("No data yet");
+    if (!dates || dates.length === 0) throw new Error("empty");
     currentIndex = 0;
     loadDay(dates[0]);
   } catch (e) {
-    document.getElementById("propsContainer").innerHTML = '<div class="empty">No data yet.<br>Run the bot first or wait for the next scheduled run.</div>';
+    document.getElementById("propsContainer").innerHTML = '<div class="empty">No data yet.<br>Run the bot first.</div>';
   }
 }
 
-function createPropCard(p) {
-  return '<div class="prop-card">' +
-    '<div class="prop-header">' +
-      '<div class="prop-num">' + p.num + ' <span>' + p.cat + '</span></div>' +
-      '<div class="model-pct">' + p.pct + '%</div>' +
-    '</div>' +
-    '<div class="league-time">' + p.league + '</div>' +
-    '<div class="teams">' +
-      '<div class="team-logo">' + (p.home || "?")[0] + '</div>' +
-      p.home + ' vs ' + p.away +
-      '<div class="team-logo">' + (p.away || "?")[0] + '</div>' +
-    '</div>' +
-    '<div class="form">' + (p.form || "—") + '</div>' +
-    '<div class="pick-line">' + p.pick + '</div>' +
-    '<div class="progress"><div class="progress-bar" style="width:' + p.pct + '%"></div></div>' +
-    '<div class="meta">' + (p.meta || "") + '</div>' +
-    '<div class="reason">' + (p.reason || "") + '</div>' +
-  '</div>';
+function createCard(p) {
+  return `
+    <div class="prop-card">
+      <div class="prop-header">
+        <div class="prop-num">\( {p.num} <span> \){p.cat}</span></div>
+        <div class="model-pct">${p.pct}%</div>
+      </div>
+      <div class="league-time">${p.league}</div>
+      <div class="teams">
+        <div class="team-logo">${(p.home || "?")[0]}</div>
+        ${p.home} vs ${p.away}
+        <div class="team-logo">${(p.away || "?")[0]}</div>
+      </div>
+      <div class="form">${p.form || "— · —"}</div>
+      <div class="pick-line">${p.pick}</div>
+      <div class="progress">
+        <div class="progress-bar" style="width:${p.pct}%"></div>
+      </div>
+      <div class="meta">${p.meta || ""}</div>
+      <div class="reason">${p.reason || ""}</div>
+    </div>
+  `;
 }
 
 async function loadDay(dateStr) {
-  document.getElementById("propsContainer").innerHTML = '<div class="loading">Loading ' + dateStr + '...</div>';
+  document.getElementById("propsContainer").innerHTML = `<div class="loading">Loading ${dateStr}...</div>`;
   document.getElementById("specialShotsSection").style.display = "none";
-  
+
   try {
-    const res = await fetch('data/' + dateStr + '.json?t=' + Date.now());
+    const res = await fetch(`data/\( {dateStr}.json?t= \){Date.now()}`);
     const d = await res.json();
 
     document.getElementById("dayLabel").textContent = d.label || dateStr;
@@ -143,36 +288,25 @@ async function loadDay(dateStr) {
     if (!d.props || d.props.length === 0) {
       container.innerHTML = '<div class="empty">No strong props found for this day.</div>';
     } else {
-      container.innerHTML = d.props.map(function(p){ return createPropCard(p); }).join("");
+      container.innerHTML = d.props.map(p => createCard(p)).join("");
     }
 
     if (d.special_shots && d.special_shots.length > 0) {
       document.getElementById("specialShotsSection").style.display = "block";
-      document.getElementById("specialShotsContainer").innerHTML = d.special_shots.map(function(p){ return createPropCard(p); }).join("");
-    }
-
-    if (d.special && d.special.pick && d.special.pick !== "—") {
-      document.getElementById("specialBox").style.display = "block";
-      document.getElementById("specialOdds").textContent = d.special.odds;
-      document.getElementById("specialLeague").textContent = d.special.league;
-      document.getElementById("specialMatch").textContent = d.special.match;
-      document.getElementById("specialPick").textContent = d.special.pick;
-      document.getElementById("specialReason").innerHTML = d.special.reason;
-    } else {
-      document.getElementById("specialBox").style.display = "none";
+      document.getElementById("specialShotsContainer").innerHTML = d.special_shots.map(p => createCard(p)).join("");
     }
   } catch (e) {
-    document.getElementById("propsContainer").innerHTML = '<div class="empty">Could not load ' + dateStr + '</div>';
+    document.getElementById("propsContainer").innerHTML = `<div class="empty">Could not load ${dateStr}</div>`;
   }
 }
 
-document.getElementById("prevBtn").onclick = function() {
+document.getElementById("prevBtn").onclick = () => {
   if (currentIndex < dates.length - 1) {
     currentIndex++;
     loadDay(dates[currentIndex]);
   }
 };
-document.getElementById("nextBtn").onclick = function() {
+document.getElementById("nextBtn").onclick = () => {
   if (currentIndex > 0) {
     currentIndex--;
     loadDay(dates[currentIndex]);
@@ -182,4 +316,4 @@ document.getElementById("nextBtn").onclick = function() {
 loadIndex();
 </script>
 </body>
-</html>
+ </html>
