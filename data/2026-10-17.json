@@ -2,7 +2,7 @@
   "date": "2026-10-17",
   "label": "Sat 17 Oct",
   "sub": "Live",
-  "matches": 1644,
+  "matches": 1643,
   "sampled": 10,
   "posted": 7,
   "filled": 0,
@@ -10,7 +10,7 @@
     {
       "num": "01",
       "cat": "Corners",
-      "pct": 81,
+      "pct": 80,
       "league": "Serie A",
       "home": "Mirassol",
       "away": "Internacional",
@@ -22,7 +22,7 @@
     {
       "num": "02",
       "cat": "Fouls",
-      "pct": 79,
+      "pct": 75,
       "league": "Canadian Premier League",
       "home": "Supra du Quebec",
       "away": "York United",
@@ -34,7 +34,7 @@
     {
       "num": "03",
       "cat": "Throw-Ins",
-      "pct": 73,
+      "pct": 78,
       "league": "Copa De La Liga",
       "home": "Coquimbo Unido",
       "away": "O'Higgins",
@@ -46,7 +46,7 @@
     {
       "num": "04",
       "cat": "Cards",
-      "pct": 72,
+      "pct": 75,
       "league": "Liga Profesional Argentina",
       "home": "Boca Juniors",
       "away": "Talleres Cordoba",
@@ -58,7 +58,7 @@
     {
       "num": "05",
       "cat": "Shots on Target",
-      "pct": 76,
+      "pct": 75,
       "league": "Canadian Premier League",
       "home": "Vancouver FC",
       "away": "HFX Wanderers FC",
@@ -70,7 +70,7 @@
     {
       "num": "06",
       "cat": "Goal Kicks",
-      "pct": 79,
+      "pct": 81,
       "league": "Australian Championship",
       "home": "Broadmeadow Magic",
       "away": "Wests APIA",
@@ -82,7 +82,7 @@
     {
       "num": "07",
       "cat": "Corners",
-      "pct": 80,
+      "pct": 77,
       "league": "Australian Championship",
       "home": "Sutherland Sharks",
       "away": "South Melbourne",
@@ -96,7 +96,7 @@
     {
       "num": "01",
       "cat": "Shots Towards Goal",
-      "pct": 82,
+      "pct": 78,
       "league": "Premier League",
       "home": "Eastern District",
       "away": "Eastern",
