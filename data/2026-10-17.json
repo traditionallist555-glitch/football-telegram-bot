@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-17",
+  "label": "Sat 17 Oct",
+  "sub": "Live",
+  "matches": 1639,
+  "sampled": 10,
+  "posted": 7,
+  "filled": 0,
+  "props": [
+    {
+      "num": "01",
+      "cat": "Corners",
+      "pct": 81,
+      "league": "Serie A",
+      "home": "Mirassol",
+      "away": "Internacional",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "02",
+      "cat": "Fouls",
+      "pct": 74,
+      "league": "Canadian Premier League",
+      "home": "Supra du Quebec",
+      "away": "York United",
+      "form": "— · —",
+      "pick": "Over 22.5 Total Fouls",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "03",
+      "cat": "Throw-Ins",
+      "pct": 73,
+      "league": "Segunda División",
+      "home": "Colón",
+      "away": "Sportivo Huracan",
+      "form": "— · —",
+      "pick": "Over 45.5 Total Throw-Ins",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "04",
+      "cat": "Cards",
+      "pct": 76,
+      "league": "Premier Division",
+      "home": "Green City",
+      "away": "Freemansville",
+      "form": "— · —",
+      "pick": "Over 4.5 Total Cards",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "05",
+      "cat": "Shots on Target",
+      "pct": 80,
+      "league": "Serie B",
+      "home": "Sport Recife",
+      "away": "Fortaleza EC",
+      "form": "— · —",
+      "pick": "Over 8.5 Total Shots on Target",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "06",
+      "cat": "Goal Kicks",
+      "pct": 82,
+      "league": "USL Super League",
+      "home": "Carolina Ascent W",
+      "away": "DC Power W",
+      "form": "— · —",
+      "pick": "Over 16.5 Total Goal Kicks",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    },
+    {
+      "num": "07",
+      "cat": "Corners",
+      "pct": 76,
+      "league": "USL Super League",
+      "home": "Sporting JAX W",
+      "away": "Fort Lauderdale United W",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · API-Football",
+      "reason": "Selected from today's fixtures using statistical model filter."
+    }
+  ],
+  "special_shots": [
+    {
+      "num": "01",
+      "cat": "Shots Towards Goal",
+      "pct": 76,
+      "league": "Copa De La Liga",
+      "home": "Coquimbo Unido",
+      "away": "O'Higgins",
+      "form": "— · —",
+      "pick": "Over 24.5 Total Shots Towards Goal",
+      "meta": "Special carefully filtered · API-Football",
+      "reason": "Strictly selected Shots Towards Goal prop from verified fixtures."
+    },
+    {
+      "num": "02",
+      "cat": "Shots Towards Goal",
+      "pct": 81,
+      "league": "Primera Nacional",
+      "home": "Atletico DE Rafaela",
+      "away": "Quilmes",
+      "form": "— · —",
+      "pick": "Over 24.5 Total Shots Towards Goal",
+      "meta": "Special carefully filtered · API-Football",
+      "reason": "Strictly selected Shots Towards Goal prop from verified fixtures."
+    },
+    {
+      "num": "03",
+      "cat": "Shots Towards Goal",
+      "pct": 81,
+      "league": "NWSL Women",
+      "home": "Boston Legacy W",
+      "away": "Racing Louisville W",
+      "form": "— · —",
+      "pick": "Over 24.5 Total Shots Towards Goal",
+      "meta": "Special carefully filtered · API-Football",
+      "reason": "Strictly selected Shots Towards Goal prop from verified fixtures."
+    }
+  ],
+  "special": {
+    "odds": "—",
+    "league": "Special appears when strong 3.00+ price is found",
+    "match": "—",
+    "pick": "—",
+    "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+  }
+}
