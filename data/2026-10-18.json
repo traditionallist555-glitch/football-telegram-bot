@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-18",
+  "label": "Sun 18 Oct",
+  "sub": "Live",
+  "matches": 1327,
+  "sampled": 10,
+  "posted": 7,
+  "filled": 0,
+  "props": [
+    {
+      "num": "01",
+      "cat": "Corners",
+      "pct": 80,
+      "league": "Liga Profesional Argentina",
+      "home": "Atletico Tucuman",
+      "away": "Rosario Central",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "02",
+      "cat": "Fouls",
+      "pct": 74,
+      "league": "Liga Profesional Argentina",
+      "home": "Velez Sarsfield",
+      "away": "Gimnasia M.",
+      "form": "— · —",
+      "pick": "Over 23.5 Total Fouls",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "03",
+      "cat": "Throw-Ins",
+      "pct": 74,
+      "league": "USL Championship",
+      "home": "Hartford Athletic",
+      "away": "Brooklyn",
+      "form": "— · —",
+      "pick": "Over 46.5 Total Throw-Ins",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "04",
+      "cat": "Cards",
+      "pct": 73,
+      "league": "USL Championship",
+      "home": "Louisville City",
+      "away": "Indy Eleven",
+      "form": "— · —",
+      "pick": "Over 4.5 Total Cards",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "05",
+      "cat": "Shots on Target",
+      "pct": 77,
+      "league": "USL Championship",
+      "home": "Miami FC",
+      "away": "Charleston Battery",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Shots on Target",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "06",
+      "cat": "Goal Kicks",
+      "pct": 77,
+      "league": "Major League Soccer",
+      "home": "Atlanta United FC",
+      "away": "Inter Miami",
+      "form": "— · —",
+      "pick": "Over 17.5 Total Goal Kicks",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "07",
+      "cat": "Corners",
+      "pct": 78,
+      "league": "Major League Soccer",
+      "home": "New York City FC",
+      "away": "Los Angeles FC",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    }
+  ],
+  "special_shots": [
+    {
+      "num": "01",
+      "cat": "Shots Towards Goal",
+      "pct": 82,
+      "league": "Major League Soccer",
+      "home": "New York Red Bulls",
+      "away": "Toronto FC",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "02",
+      "cat": "Shots Towards Goal",
+      "pct": 80,
+      "league": "Major League Soccer",
+      "home": "Orlando City SC",
+      "away": "DC United",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "03",
+      "cat": "Shots Towards Goal",
+      "pct": 78,
+      "league": "Major League Soccer",
+      "home": "New England Revolution",
+      "away": "Chicago Fire",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    }
+  ],
+  "special": {
+    "odds": "—",
+    "league": "Special appears when strong 3.00+ price is found",
+    "match": "—",
+    "pick": "—",
+    "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+  }
+}
