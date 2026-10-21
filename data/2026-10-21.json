@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-21",
+  "label": "Wed 21 Oct",
+  "sub": "Live",
+  "matches": 268,
+  "sampled": 10,
+  "posted": 7,
+  "filled": 0,
+  "props": [
+    {
+      "num": "01",
+      "cat": "Corners",
+      "pct": 76,
+      "league": "CONCACAF Caribbean Club Championship",
+      "home": "Violette AC",
+      "away": "Portmore United",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "02",
+      "cat": "Fouls",
+      "pct": 75,
+      "league": "Premier League",
+      "home": "Home United",
+      "away": "Tampines Rovers",
+      "form": "— · —",
+      "pick": "Over 23.5 Total Fouls",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "03",
+      "cat": "Throw-Ins",
+      "pct": 75,
+      "league": "Premier League",
+      "home": "Ethiopia Bunna",
+      "away": "Negelle Arsi",
+      "form": "— · —",
+      "pick": "Over 46.5 Total Throw-Ins",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "04",
+      "cat": "Cards",
+      "pct": 77,
+      "league": "Premier League",
+      "home": "Hadiya Hosaena",
+      "away": "Welwalo Adigrat Uni",
+      "form": "— · —",
+      "pick": "Over 4.5 Total Cards",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "05",
+      "cat": "Shots on Target",
+      "pct": 79,
+      "league": "Premier League",
+      "home": "Sidama Bunna",
+      "away": "Ethiopian Medhin",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Shots on Target",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "06",
+      "cat": "Goal Kicks",
+      "pct": 77,
+      "league": "Premier League",
+      "home": "BUL",
+      "away": "NEC",
+      "form": "— · —",
+      "pick": "Over 17.5 Total Goal Kicks",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "07",
+      "cat": "Corners",
+      "pct": 78,
+      "league": "Premier League",
+      "home": "Kitara",
+      "away": "Ntugasaze",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    }
+  ],
+  "special_shots": [
+    {
+      "num": "01",
+      "cat": "Shots Towards Goal",
+      "pct": 80,
+      "league": "Premier League",
+      "home": "Lugazi",
+      "away": "Express",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "02",
+      "cat": "Shots Towards Goal",
+      "pct": 78,
+      "league": "Ligue 1",
+      "home": "CS Manika",
+      "away": "Sanga Balende",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "03",
+      "cat": "Shots Towards Goal",
+      "pct": 83,
+      "league": "Premier League",
+      "home": "Alay",
+      "away": "Alga",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    }
+  ],
+  "special": {
+    "odds": "—",
+    "league": "Special appears when strong 3.00+ price is found",
+    "match": "—",
+    "pick": "—",
+    "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+  }
+}
