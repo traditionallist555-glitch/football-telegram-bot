@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-22",
+  "label": "Thu 22 Oct",
+  "sub": "Live",
+  "matches": 166,
+  "sampled": 10,
+  "posted": 7,
+  "filled": 0,
+  "props": [
+    {
+      "num": "01",
+      "cat": "Corners",
+      "pct": 79,
+      "league": "Major League Soccer",
+      "home": "FC Cincinnati",
+      "away": "DC United",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "02",
+      "cat": "Fouls",
+      "pct": 76,
+      "league": "Canadian Championship",
+      "home": "CF Montreal",
+      "away": "Forge",
+      "form": "— · —",
+      "pick": "Over 23.5 Total Fouls",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "03",
+      "cat": "Throw-Ins",
+      "pct": 78,
+      "league": "USL Championship",
+      "home": "Sporting JAX",
+      "away": "Louisville City",
+      "form": "— · —",
+      "pick": "Over 46.5 Total Throw-Ins",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "04",
+      "cat": "Cards",
+      "pct": 73,
+      "league": "Australian Championship",
+      "home": "Lions",
+      "away": "Preston Lions",
+      "form": "— · —",
+      "pick": "Over 4.5 Total Cards",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "05",
+      "cat": "Shots on Target",
+      "pct": 76,
+      "league": "UEFA U17 Championship - Qualification",
+      "home": "Moldova U17",
+      "away": "Belarus U17",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Shots on Target",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "06",
+      "cat": "Goal Kicks",
+      "pct": 79,
+      "league": "UEFA U17 Championship - Qualification",
+      "home": "Slovenia U17",
+      "away": "Czechia U17",
+      "form": "— · —",
+      "pick": "Over 17.5 Total Goal Kicks",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "07",
+      "cat": "Corners",
+      "pct": 79,
+      "league": "Premier League",
+      "home": "Awassa Kenema",
+      "away": "Ethiopia Nigd Bank",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    }
+  ],
+  "special_shots": [
+    {
+      "num": "01",
+      "cat": "Shots Towards Goal",
+      "pct": 78,
+      "league": "Premier League",
+      "home": "Kedus Giorgis",
+      "away": "Adama Kenema",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "02",
+      "cat": "Shots Towards Goal",
+      "pct": 81,
+      "league": "Premier League",
+      "home": "Kigezi HomeBoyz",
+      "away": "Entebbe UPPC",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "03",
+      "cat": "Shots Towards Goal",
+      "pct": 79,
+      "league": "Premier League",
+      "home": "SC Villa",
+      "away": "Mbarara City",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    }
+  ],
+  "special": {
+    "odds": "—",
+    "league": "Special appears when strong 3.00+ price is found",
+    "match": "—",
+    "pick": "—",
+    "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+  }
+}
