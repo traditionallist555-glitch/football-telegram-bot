@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-27",
+  "label": "Tue 27 Oct",
+  "sub": "Live",
+  "matches": 331,
+  "sampled": 10,
+  "posted": 7,
+  "filled": 0,
+  "props": [
+    {
+      "num": "01",
+      "cat": "Corners",
+      "pct": 76,
+      "league": "Serie A",
+      "home": "Flamengo",
+      "away": "Atletico-MG",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "02",
+      "cat": "Fouls",
+      "pct": 76,
+      "league": "Liga Profesional Argentina",
+      "home": "Instituto Cordoba",
+      "away": "Deportivo Riestra",
+      "form": "— · —",
+      "pick": "Over 23.5 Total Fouls",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "03",
+      "cat": "Throw-Ins",
+      "pct": 77,
+      "league": "Premier League",
+      "home": "Mount Pleasant Academy",
+      "away": "Montego Bay United",
+      "form": "— · —",
+      "pick": "Over 46.5 Total Throw-Ins",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "04",
+      "cat": "Cards",
+      "pct": 76,
+      "league": "Liga Premier Serie A",
+      "home": "FC Santiago",
+      "away": "Real Refineros",
+      "form": "— · —",
+      "pick": "Over 4.5 Total Cards",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "05",
+      "cat": "Shots on Target",
+      "pct": 79,
+      "league": "Premier League International Cup",
+      "home": "Ipswich Town U21",
+      "away": "Jong PSV U21",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Shots on Target",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "06",
+      "cat": "Goal Kicks",
+      "pct": 81,
+      "league": "Premier League",
+      "home": "Ethiopian Medhin",
+      "away": "Mekelakeya",
+      "form": "— · —",
+      "pick": "Over 17.5 Total Goal Kicks",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    },
+    {
+      "num": "07",
+      "cat": "Corners",
+      "pct": 76,
+      "league": "Premier League",
+      "home": "Asia Talas",
+      "away": "OshMU Aldier",
+      "form": "— · —",
+      "pick": "Over 9.5 Total Corners",
+      "meta": "Model board · carefully filtered",
+      "reason": "Selected from major competitions with strong statistical profile."
+    }
+  ],
+  "special_shots": [
+    {
+      "num": "01",
+      "cat": "Shots Towards Goal",
+      "pct": 78,
+      "league": "Premier League",
+      "home": "Bishkek City",
+      "away": "Dordoi Bishkek",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "02",
+      "cat": "Shots Towards Goal",
+      "pct": 80,
+      "league": "UEFA U17 Championship - Qualification",
+      "home": "Faroe Islands U17",
+      "away": "Romania U17",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    },
+    {
+      "num": "03",
+      "cat": "Shots Towards Goal",
+      "pct": 83,
+      "league": "U18 Premier League - North",
+      "home": "Burnley U18",
+      "away": "Manchester United U18",
+      "form": "— · —",
+      "pick": "Over 25.5 Total Shots Towards Goal",
+      "meta": "Special carefully cooked · major league only",
+      "reason": "Strictly selected from top leagues. Market widely available on betting platforms."
+    }
+  ],
+  "special": {
+    "odds": "—",
+    "league": "Special appears when strong 3.00+ price is found",
+    "match": "—",
+    "pick": "—",
+    "reason": "Price special is selected only when a strong 3.00+ opportunity exists."
+  }
+}
